@@ -1,0 +1,229 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container-fluid mt-4">
+    <h2>Admin Dashboard</h2>
+    
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-2">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Total Users</h5>
+                    <h2>{{ total_users }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Sellers</h5>
+                    <h2>{{ total_sellers }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Products</h5>
+                    <h2>{{ total_products }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Orders</h5>
+                    <h2>{{ total_orders }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card bg-secondary text-white">
+                <div class="card-body">
+                    <h5 class="card-title">C2B Listings</h5>
+                    <h2>{{ total_requirements }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Sales Overview</h5>
+                    <canvas id="salesChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Sales by Category</h5>
+                    <canvas id="categoryChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity Row -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Recent Orders</h5>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Order ID</th>
+                                    <th>Customer</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for order in recent_orders %}
+                                <tr>
+                                    <td>#{{ order.id }}</td>
+                                    <td>{{ order.user.username }}</td>
+                                    <td>${{ "%.2f"|format(order.total_amount) }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ {
+                                            'pending': 'warning',
+                                            'processing': 'info',
+                                            'shipped': 'primary',
+                                            'delivered': 'success'
+                                        }[order.status] }}">
+                                            {{ order.status|title }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Recent C2B Listings</h5>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Category</th>
+                                    <th>Status</th>
+                                    <th>Proposals</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for req in recent_requirements %}
+                                <tr>
+                                    <td>{{ req.title }}</td>
+                                    <td>{{ req.category }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ {
+                                            'open': 'success',
+                                            'closed': 'danger'
+                                        }[req.status] }}">
+                                            {{ req.status|title }}
+                                        </span>
+                                    </td>
+                                    <td>{{ req.proposals|length }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Links -->
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-md-3">
+            <a href="{{ url_for('admin.manage_users') }}" class="btn btn-primary w-100 mb-2">
+                <i class="fas fa-users"></i> Manage Users
+            </a>
+        </div>
+        <div class="col-md-3">
+            <a href="{{ url_for('admin.manage_requirements') }}" class="btn btn-success w-100 mb-2">
+                <i class="fas fa-list"></i> Manage C2B Listings
+            </a>
+        </div>
+        <div class="col-md-3">
+            <a href="{{ url_for('admin.manage_reports') }}" class="btn btn-warning w-100 mb-2">
+                <i class="fas fa-flag"></i> Manage Reports
+            </a>
+        </div>
+        <div class="col-md-3">
+            <a href="{{ url_for('admin.analytics') }}" class="btn btn-info w-100 mb-2">
+                <i class="fas fa-chart-bar"></i> View Analytics
+            </a>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Sales Chart
+fetch('/admin/api/sales_data')
+    .then(response => response.json())
+    .then(data => {
+        const ctx = document.getElementById('salesChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: data.dates,
+                datasets: [{
+                    label: 'Daily Sales',
+                    data: data.totals,
+                    borderColor: 'rgb(75, 192, 192)',
+                    tension: 0.1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    });
+
+// Category Chart
+const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+new Chart(categoryCtx, {
+    type: 'doughnut',
+    data: {
+        labels: {{ category_sales|map(attribute='0')|list|tojson }},
+        datasets: [{
+            data: {{ category_sales|map(attribute='1')|list|tojson }},
+            backgroundColor: [
+                'rgb(255, 99, 132)',
+                'rgb(54, 162, 235)',
+                'rgb(255, 205, 86)',
+                'rgb(75, 192, 192)',
+                'rgb(153, 102, 255)'
+            ]
+        }]
+    },
+    options: {
+        responsive: true
+    }
+});
+</script>
+{% endblock %} 

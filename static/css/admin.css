@@ -1,0 +1,62 @@
+/* Admin specific styles */
+.collapse {
+    transition: all 0.3s ease-in-out;
+}
+
+.collapse.show {
+    display: block;
+}
+
+/* User details section */
+#userDetails {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 0.25rem;
+}
+
+/* Order items table */
+.table-sm th,
+.table-sm td {
+    padding: 0.5rem;
+}
+
+/* Status badges */
+.badge {
+    padding: 0.5em 0.75em;
+    font-size: 0.875em;
+}
+
+/* Card hover effects */
+.card {
+    transition: transform 0.2s ease-in-out;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+}
+
+/* Button styles */
+.btn-group .btn {
+    margin-right: 0.25rem;
+}
+
+/* Collapse animation */
+.collapsing {
+    position: relative;
+    height: 0;
+    overflow: hidden;
+    transition: height 0.35s ease;
+}
+
+/* Details button */
+.btn-details {
+    position: relative;
+}
+
+.btn-details i {
+    transition: transform 0.3s ease;
+}
+
+.btn-details[aria-expanded="true"] i {
+    transform: rotate(180deg);
+} 
