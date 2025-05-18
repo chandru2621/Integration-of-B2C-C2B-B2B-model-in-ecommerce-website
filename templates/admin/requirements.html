@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Requirements{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Manage Requirements</h3>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Title</th>
+                                    <th>Requester</th>
+                                    <th>Status</th>
+                                    <th>Created At</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for requirement in requirements %}
+                                <tr>
+                                    <td>{{ requirement.id }}</td>
+                                    <td>{{ requirement.title }}</td>
+                                    <td>{{ requirement.requester.username }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if requirement.status == 'completed' else 'warning' if requirement.status == 'in_progress' else 'info' }}">
+                                            {{ requirement.status|title }}
+                                        </span>
+                                    </td>
+                                    <td>{{ requirement.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <a href="{{ url_for('admin.view_requirement', requirement_id=requirement.id) }}" class="btn btn-sm btn-info">
+                                                <i class="fas fa-eye"></i> View
+                                            </a>
+                                            <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#updateStatusModal{{ requirement.id }}">
+                                                <i class="fas fa-edit"></i> Update Status
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteRequirementModal{{ requirement.id }}">
+                                                <i class="fas fa-trash"></i> Delete
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <!-- Update Status Modal -->
+                                <div class="modal fade" id="updateStatusModal{{ requirement.id }}" tabindex="-1" aria-labelledby="updateStatusModalLabel{{ requirement.id }}" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="updateStatusModalLabel{{ requirement.id }}">Update Requirement Status</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <form action="{{ url_for('admin.update_requirement_status', requirement_id=requirement.id) }}" method="POST">
+                                                <div class="modal-body">
+                                                    <div class="mb-3">
+                                                        <label for="status" class="form-label">Status</label>
+                                                        <select class="form-select" id="status" name="status" required>
+                                                            <option value="pending" {% if requirement.status == 'pending' %}selected{% endif %}>Pending</option>
+                                                            <option value="in_progress" {% if requirement.status == 'in_progress' %}selected{% endif %}>In Progress</option>
+                                                            <option value="completed" {% if requirement.status == 'completed' %}selected{% endif %}>Completed</option>
+                                                            <option value="cancelled" {% if requirement.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                    <button type="submit" class="btn btn-primary">Update Status</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Delete Requirement Modal -->
+                                <div class="modal fade" id="deleteRequirementModal{{ requirement.id }}" tabindex="-1" aria-labelledby="deleteRequirementModalLabel{{ requirement.id }}" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="deleteRequirementModalLabel{{ requirement.id }}">Confirm Delete</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                Are you sure you want to delete requirement "{{ requirement.title }}"?
+                                                This action cannot be undone.
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                <form action="{{ url_for('admin.delete_requirement', requirement_id=requirement.id) }}" method="POST">
+                                                    <button type="submit" class="btn btn-danger">Delete</button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

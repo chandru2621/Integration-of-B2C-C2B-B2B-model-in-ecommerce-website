@@ -1,0 +1,114 @@
+{% extends "admin/base.html" %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <h1 class="mt-4">Product Management</h1>
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="fas fa-box me-1"></i>
+            Products List
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped" id="productsTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Category</th>
+                            <th>Price</th>
+                            <th>Stock</th>
+                            <th>Seller</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for product in products %}
+                        <tr>
+                            <td>{{ product.id }}</td>
+                            <td>{{ product.name }}</td>
+                            <td>{{ product.category }}</td>
+                            <td>${{ "%.2f"|format(product.price) }}</td>
+                            <td>{{ product.stock }}</td>
+                            <td>{{ product.seller.username }}</td>
+                            <td>
+                                <span class="badge bg-{{ 'success' if product.is_active else 'danger' }}">
+                                    {{ 'Active' if product.is_active else 'Inactive' }}
+                                </span>
+                            </td>
+                            <td>
+                                <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#productModal{{ product.id }}">
+                                    Edit
+                                </button>
+                                <form action="{{ url_for('admin.toggle_product_status', product_id=product.id) }}" method="POST" style="display: inline;">
+                                    <button type="submit" class="btn btn-{{ 'danger' if product.is_active else 'success' }} btn-sm">
+                                        {{ 'Deactivate' if product.is_active else 'Activate' }}
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+
+                        <!-- Product Edit Modal -->
+                        <div class="modal fade" id="productModal{{ product.id }}" tabindex="-1">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Edit Product #{{ product.id }}</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <form action="{{ url_for('admin.update_product', product_id=product.id) }}" method="POST">
+                                        <div class="modal-body">
+                                            <div class="mb-3">
+                                                <label class="form-label">Name</label>
+                                                <input type="text" class="form-control" name="name" value="{{ product.name }}" required>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label">Category</label>
+                                                <select name="category" class="form-select">
+                                                    <option value="clothing" {% if product.category == 'clothing' %}selected{% endif %}>Clothing</option>
+                                                    <option value="accessories" {% if product.category == 'accessories' %}selected{% endif %}>Accessories</option>
+                                                    <option value="home" {% if product.category == 'home' %}selected{% endif %}>Home</option>
+                                                    <option value="beauty" {% if product.category == 'beauty' %}selected{% endif %}>Beauty</option>
+                                                </select>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label">Price</label>
+                                                <input type="number" step="0.01" class="form-control" name="price" value="{{ product.price }}" required>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label">Stock</label>
+                                                <input type="number" class="form-control" name="stock" value="{{ product.stock }}" required>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label">Description</label>
+                                                <textarea class="form-control" name="description" rows="3">{{ product.description }}</textarea>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+        $('#productsTable').DataTable({
+            order: [[0, 'desc']], // Sort by ID descending
+            pageLength: 25
+        });
+    });
+</script>
+{% endblock %} 

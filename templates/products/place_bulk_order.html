@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}Place Bulk Order - {{ product.name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Place Bulk Order - {{ product.name }}</h3>
+                    <span class="badge {% if product.condition == 'used' %}bg-warning{% else %}bg-success{% endif %}">
+                        {{ product.condition|title }}
+                    </span>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <h5>Product Details</h5>
+                        <p>{{ product.description }}</p>
+                        <ul class="list-unstyled">
+                            <li><strong>Price:</strong> ${{ "%.2f"|format(product.price) }}</li>
+                            <li><strong>Available Stock:</strong> {{ product.stock }} units</li>
+                            <li><strong>Bulk Discount:</strong> {{ product.bulk_discount }}</li>
+                            <li><strong>Sustainability Score:</strong> {{ product.sustainability_score }}/5</li>
+                            <li><strong>Materials:</strong> {{ product.materials }}</li>
+                            <li><strong>Certifications:</strong> {{ product.certifications }}</li>
+                        </ul>
+                    </div>
+
+                    <form action="{{ url_for('products.place_bulk_order', product_id=product.id) }}" method="POST">
+                        <div class="mb-3">
+                            <label for="organization" class="form-label">Organization Name</label>
+                            <input type="text" class="form-control" id="organization" name="organization" required>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="email" class="form-label">Email Address</label>
+                                <input type="email" class="form-control" id="email" name="email" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="phone" class="form-label">Phone Number</label>
+                                <input type="tel" class="form-control" id="phone" name="phone" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="quantity" class="form-label">Order Quantity</label>
+                            <input type="number" class="form-control" id="quantity" name="quantity" min="1" max="{{ product.stock }}" required>
+                            <div class="form-text">Available stock: {{ product.stock }} units</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="requirements" class="form-label">Special Requirements</label>
+                            <textarea class="form-control" id="requirements" name="requirements" rows="3" placeholder="Any special requirements or notes for your order"></textarea>
+                        </div>
+
+                        <div class="alert alert-warning">
+                            <h5>Estimated Total</h5>
+                            <p id="estimatedTotal">Calculating...</p>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">Submit Bulk Order Request</button>
+                            <a href="{{ url_for('products.bulk_request') }}" class="btn btn-secondary">Back to Products</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const quantityInput = document.getElementById('quantity');
+    const estimatedTotal = document.getElementById('estimatedTotal');
+    const basePrice = {{ product.price }};
+    
+    function calculateTotal() {
+        const quantity = parseInt(quantityInput.value) || 0;
+        let total = basePrice * quantity;
+        
+        // Apply bulk discount if applicable
+        const bulkDiscount = "{{ product.bulk_discount }}";
+        if (bulkDiscount.includes('15%') && quantity >= 5) {
+            total *= 0.85;
+        } else if (bulkDiscount.includes('20%') && quantity >= 20) {
+            total *= 0.80;
+        } else if (bulkDiscount.includes('25%') && quantity >= 50) {
+            total *= 0.75;
+        } else if (bulkDiscount.includes('30%') && quantity >= 100) {
+            total *= 0.70;
+        }
+        
+        estimatedTotal.textContent = `$${total.toFixed(2)} (${quantity} units)`;
+    }
+    
+    quantityInput.addEventListener('input', calculateTotal);
+    calculateTotal();
+});
+</script>
+{% endblock %}
+{% endblock %} 

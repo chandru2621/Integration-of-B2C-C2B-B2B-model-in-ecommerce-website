@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Order Management</h2>
+    {% if orders %}
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Date</th>
+                        <th>Customer</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in orders %}
+                    <tr>
+                        <td>#{{ order.id }}</td>
+                        <td>{{ order.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td>{{ order.user.username }}</td>
+                        <td>
+                            <span class="badge bg-{{ {
+                                'pending': 'warning',
+                                'processing': 'info',
+                                'shipped': 'primary',
+                                'delivered': 'success',
+                                'return_requested': 'danger'
+                            }[order.status] }}">
+                                {{ order.status|title }}
+                            </span>
+                        </td>
+                        <td>
+                            <a href="{{ url_for('order.download_invoice', order_id=order.id) }}" 
+                               class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-download"></i> Invoice
+                            </a>
+                            {% if order.status not in ['delivered', 'return_requested'] %}
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle" 
+                                        data-bs-toggle="dropdown">
+                                    Update Status
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li>
+                                        <form action="{{ url_for('order.update_order_status', order_id=order.id) }}" 
+                                              method="POST">
+                                            <input type="hidden" name="status" value="processing">
+                                            <button type="submit" class="dropdown-item">Processing</button>
+                                        </form>
+                                    </li>
+                                    <li>
+                                        <form action="{{ url_for('order.update_order_status', order_id=order.id) }}" 
+                                              method="POST">
+                                            <input type="hidden" name="status" value="shipped">
+                                            <button type="submit" class="dropdown-item">Shipped</button>
+                                        </form>
+                                    </li>
+                                    <li>
+                                        <form action="{{ url_for('order.update_order_status', order_id=order.id) }}" 
+                                              method="POST">
+                                            <input type="hidden" name="status" value="delivered">
+                                            <button type="submit" class="dropdown-item">Delivered</button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </div>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="5">
+                            <div class="ms-4">
+                                <strong>Items:</strong>
+                                <ul class="list-unstyled">
+                                    {% for item in order.items %}
+                                    {% if item.product.seller_id == current_user.id %}
+                                    <li>
+                                        {{ item.quantity }}x {{ item.product.name }} 
+                                        (${{ "%.2f"|format(item.price) }} each)
+                                    </li>
+                                    {% endif %}
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            No orders found for your products.
+        </div>
+    {% endif %}
+</div>
+{% endblock %} 

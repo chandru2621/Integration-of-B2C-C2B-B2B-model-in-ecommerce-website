@@ -1,0 +1,258 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Users{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Manage Users</h3>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Username</th>
+                                    <th>Email</th>
+                                    <th>Role</th>
+                                    <th>Status</th>
+                                    <th>Created At</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in users %}
+                                <tr>
+                                    <td>{{ user.id }}</td>
+                                    <td>{{ user.username }}</td>
+                                    <td>{{ user.email }}</td>
+                                    <td>
+                                        <span class="badge badge-{{ 'primary' if user.role == 'admin' else 'info' }}">
+                                            {{ user.role|title }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-{{ 'success' if user.is_active else 'danger' }}">
+                                            {{ 'Active' if user.is_active else 'Inactive' }}
+                                        </span>
+                                    </td>
+                                    <td>{{ user.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <a href="{{ url_for('admin.edit_user', user_id=user.id) }}" class="btn btn-sm btn-primary">
+                                                <i class="fas fa-edit"></i> Edit
+                                            </a>
+                                            <button type="button" class="btn btn-sm btn-info" data-toggle="collapse" data-target="#userDetails{{ user.id }}" aria-expanded="false" aria-controls="userDetails{{ user.id }}">
+                                                <i class="fas fa-info-circle"></i> Details
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#deleteUserModal{{ user.id }}">
+                                                <i class="fas fa-trash"></i> Delete
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="7" class="p-0">
+                                        <div id="userDetails{{ user.id }}" class="collapse">
+                                            <div class="p-3">
+                                                <div class="row mb-4">
+                                                    <div class="col-md-4">
+                                                        <div class="card bg-light">
+                                                            <div class="card-body text-center">
+                                                                <h5 class="card-title">Total Orders</h5>
+                                                                <p class="card-text display-4">{{ user.orders|length }}</p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <div class="card bg-light">
+                                                            <div class="card-body text-center">
+                                                                <h5 class="card-title">Total Spent</h5>
+                                                                <p class="card-text display-4">${{ "%.2f"|format(user.total_spent or 0) }}</p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <div class="card bg-light">
+                                                            <div class="card-body text-center">
+                                                                <h5 class="card-title">Last Order</h5>
+                                                                <p class="card-text">
+                                                                    {% if user.orders %}
+                                                                        {{ user.orders[-1].created_at.strftime('%Y-%m-%d') }}
+                                                                    {% else %}
+                                                                        No orders
+                                                                    {% endif %}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {% if user.orders %}
+                                                <div class="card">
+                                                    <div class="card-header">
+                                                        <h4>Order History</h4>
+                                                    </div>
+                                                    <div class="card-body">
+                                                        <div class="table-responsive">
+                                                            <table class="table table-bordered">
+                                                                <thead>
+                                                                    <tr>
+                                                                        <th>Order ID</th>
+                                                                        <th>Date</th>
+                                                                        <th>Status</th>
+                                                                        <th>Total Amount</th>
+                                                                        <th>Products</th>
+                                                                        <th>Details</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    {% for order in user.orders|sort(attribute='created_at', reverse=true) %}
+                                                                    <tr>
+                                                                        <td>{{ order.id }}</td>
+                                                                        <td>{{ order.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                                                                        <td>
+                                                                            <span class="badge badge-{{ 
+                                                                                'primary' if order.status == 'pending' 
+                                                                                else 'warning' if order.status == 'processing'
+                                                                                else 'info' if order.status == 'shipped'
+                                                                                else 'success' if order.status == 'delivered'
+                                                                                else 'danger' 
+                                                                            }}">
+                                                                                {{ order.status|title }}
+                                                                            </span>
+                                                                        </td>
+                                                                        <td>${{ "%.2f"|format(order.total_amount) }}</td>
+                                                                        <td>
+                                                                            <ul class="list-unstyled mb-0">
+                                                                                {% for item in order.items %}
+                                                                                <li>
+                                                                                    <strong>{{ item.product.name }}</strong>
+                                                                                    <small class="text-muted">(Qty: {{ item.quantity }})</small>
+                                                                                </li>
+                                                                                {% endfor %}
+                                                                            </ul>
+                                                                        </td>
+                                                                        <td>
+                                                                            <button class="btn btn-sm btn-info" type="button" data-toggle="collapse" data-target="#orderDetails{{ order.id }}" aria-expanded="false" aria-controls="orderDetails{{ order.id }}">
+                                                                                <i class="fas fa-chevron-down"></i> More
+                                                                            </button>
+                                                                        </td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td colspan="6" class="p-0">
+                                                                            <div id="orderDetails{{ order.id }}" class="collapse">
+                                                                                <div class="p-3">
+                                                                                    <div class="row">
+                                                                                        <div class="col-md-6">
+                                                                                            <h5>Shipping Information</h5>
+                                                                                            <p>
+                                                                                                <strong>Name:</strong> {{ order.shipping_name }}<br>
+                                                                                                <strong>Address:</strong> {{ order.shipping_address }}<br>
+                                                                                                <strong>City:</strong> {{ order.shipping_city }}<br>
+                                                                                                <strong>State:</strong> {{ order.shipping_state }}<br>
+                                                                                                <strong>ZIP:</strong> {{ order.shipping_zip }}<br>
+                                                                                                <strong>Country:</strong> {{ order.shipping_country }}
+                                                                                            </p>
+                                                                                        </div>
+                                                                                        <div class="col-md-6">
+                                                                                            <h5>Payment Information</h5>
+                                                                                            <p>
+                                                                                                <strong>Method:</strong> {{ order.payment_method|title }}<br>
+                                                                                                <strong>Status:</strong> 
+                                                                                                <span class="badge badge-{{ 'success' if order.payment_status == 'completed' else 'warning' }}">
+                                                                                                    {{ order.payment_status|title }}
+                                                                                                </span>
+                                                                                            </p>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    <div class="mt-3">
+                                                                                        <h5>Order Items</h5>
+                                                                                        <table class="table table-sm">
+                                                                                            <thead>
+                                                                                                <tr>
+                                                                                                    <th>Product</th>
+                                                                                                    <th>Quantity</th>
+                                                                                                    <th>Price</th>
+                                                                                                    <th>Total</th>
+                                                                                                </tr>
+                                                                                            </thead>
+                                                                                            <tbody>
+                                                                                                {% for item in order.items %}
+                                                                                                <tr>
+                                                                                                    <td>
+                                                                                                        <div class="d-flex align-items-center">
+                                                                                                            {% if item.product.image %}
+                                                                                                            <img src="{{ item.product.image }}" alt="{{ item.product.name }}" class="img-thumbnail mr-2" style="width: 50px; height: 50px; object-fit: cover;">
+                                                                                                            {% endif %}
+                                                                                                            <div>
+                                                                                                                <strong>{{ item.product.name }}</strong><br>
+                                                                                                                <small class="text-muted">SKU: {{ item.product.sku }}</small>
+                                                                                                            </div>
+                                                                                                        </div>
+                                                                                                    </td>
+                                                                                                    <td>{{ item.quantity }}</td>
+                                                                                                    <td>${{ "%.2f"|format(item.price) }}</td>
+                                                                                                    <td>${{ "%.2f"|format(item.total) }}</td>
+                                                                                                </tr>
+                                                                                                {% endfor %}
+                                                                                            </tbody>
+                                                                                        </table>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                        </td>
+                                                                    </tr>
+                                                                    {% endfor %}
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                {% else %}
+                                                <div class="alert alert-info">
+                                                    No orders found for this user.
+                                                </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <!-- Delete User Modal -->
+                                <div class="modal fade" id="deleteUserModal{{ user.id }}" tabindex="-1" role="dialog" aria-labelledby="deleteUserModalLabel{{ user.id }}" aria-hidden="true">
+                                    <div class="modal-dialog" role="document">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="deleteUserModalLabel{{ user.id }}">Confirm Delete</h5>
+                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                    <span aria-hidden="true">&times;</span>
+                                                </button>
+                                            </div>
+                                            <div class="modal-body">
+                                                Are you sure you want to delete user "{{ user.username }}"?
+                                                This action cannot be undone and will also delete all associated orders and carts.
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                                <form action="{{ url_for('admin.delete_user', user_id=user.id) }}" method="POST">
+                                                    <button type="submit" class="btn btn-danger">Delete</button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

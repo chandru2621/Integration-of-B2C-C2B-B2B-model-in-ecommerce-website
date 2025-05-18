@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}{{ product.name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-6">
+            {% if product.image_url %}
+            <img src="{{ product.image_url }}" class="img-fluid rounded" alt="{{ product.name }}">
+            {% else %}
+            <div class="bg-light d-flex align-items-center justify-content-center rounded" style="height: 400px;">
+                <i class="fas fa-image fa-5x text-muted"></i>
+            </div>
+            {% endif %}
+        </div>
+        <div class="col-md-6">
+            <h1 class="mb-3">{{ product.name }}</h1>
+            <p class="text-muted">{{ product.category }}</p>
+            
+            <div class="mb-4">
+                <h3 class="text-primary">${{ "%.2f"|format(product.price) }}</h3>
+                {% if product.bulk_price %}
+                <p class="text-muted">
+                    Bulk Price: ${{ "%.2f"|format(product.bulk_price) }}/unit (min. {{ product.min_quantity }} units)
+                </p>
+                {% endif %}
+            </div>
+
+            <div class="mb-4">
+                <h5>Description</h5>
+                <p>{{ product.description }}</p>
+            </div>
+
+            <div class="mb-4">
+                <h5>Sustainability Information</h5>
+                <div class="d-flex align-items-center mb-2">
+                    <span class="badge bg-success me-2">
+                        <i class="fas fa-leaf"></i> {{ product.sustainability_score }}/5
+                    </span>
+                    <span>Sustainability Score</span>
+                </div>
+                {% if product.materials %}
+                <p class="mb-1">
+                    <strong>Materials:</strong> {{ product.materials }}
+                </p>
+                {% endif %}
+                {% if product.certifications %}
+                <p class="mb-1">
+                    <strong>Certifications:</strong> {{ product.certifications }}
+                </p>
+                {% endif %}
+            </div>
+
+            <div class="mb-4">
+                <h5>Product Details</h5>
+                <p class="mb-1"><strong>Brand:</strong> {{ product.brand }}</p>
+                <p class="mb-1"><strong>Stock:</strong> {{ product.stock }} units available</p>
+                {% if product.subcategory %}
+                <p class="mb-1"><strong>Subcategory:</strong> {{ product.subcategory }}</p>
+                {% endif %}
+            </div>
+
+            {% if current_user.is_authenticated and current_user.role == 'customer' %}
+            <form action="{{ url_for('cart.add_to_cart', product_id=product.id) }}" method="POST" class="mb-4">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <input type="number" name="quantity" class="form-control" value="1" min="1" max="{{ product.stock }}" required>
+                    </div>
+                    <div class="col-md-8">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-shopping-cart"></i> Add to Cart
+                        </button>
+                    </div>
+                </div>
+            </form>
+            {% elif not current_user.is_authenticated %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> Please <a href="{{ url_for('auth.login') }}">login</a> to purchase this product.
+            </div>
+            {% endif %}
+
+            {% if current_user.is_authenticated and current_user.is_admin() %}
+            <div class="mt-4">
+                <a href="{{ url_for('products.edit_product', product_id=product.id) }}" class="btn btn-outline-primary">
+                    <i class="fas fa-edit"></i> Edit Product
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %} 

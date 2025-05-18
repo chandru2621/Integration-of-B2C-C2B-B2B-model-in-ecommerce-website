@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+
+{% block title %}{{ product.name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <!-- Product Image -->
+        <div class="col-md-6">
+            {% if product.image_url %}
+            <img src="{{ product.image_url }}" class="img-fluid rounded" alt="{{ product.name }}">
+            {% else %}
+            <div class="bg-light rounded d-flex align-items-center justify-content-center" style="height: 400px;">
+                <i class="fas fa-leaf fa-5x text-success"></i>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Product Details -->
+        <div class="col-md-6">
+            <h1 class="mb-3">{{ product.name }}</h1>
+            
+            <!-- Sustainability Badge -->
+            <div class="mb-3">
+                <span class="badge bg-success fs-6">
+                    Sustainability Score: {{ product.sustainability_score }}/5
+                </span>
+            </div>
+            
+            <!-- Price -->
+            <h3 class="text-success mb-4">${{ "%.2f"|format(product.price) }}</h3>
+            
+            <!-- Description -->
+            <p class="lead">{{ product.description }}</p>
+            
+            <!-- Sustainability Details -->
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Sustainability Information</h5>
+                </div>
+                <div class="card-body">
+                    {% if product.materials %}
+                    <p><strong>Materials:</strong> {{ product.materials }}</p>
+                    {% endif %}
+                    
+                    {% if product.certifications %}
+                    <p><strong>Certifications:</strong> {{ product.certifications }}</p>
+                    {% endif %}
+                    
+                    <p><strong>Category:</strong> {{ product.category }}</p>
+                    {% if product.subcategory %}
+                    <p><strong>Subcategory:</strong> {{ product.subcategory }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Brand Info -->
+            {% if product.brand %}
+            <p class="text-muted">Brand: {{ product.brand }}</p>
+            {% endif %}
+            
+            <!-- Stock Info -->
+            <p class="mb-4">
+                {% if product.stock > 0 %}
+                <span class="text-success">In Stock ({{ product.stock }} available)</span>
+                {% else %}
+                <span class="text-danger">Out of Stock</span>
+                {% endif %}
+            </p>
+            
+            <!-- Add to Cart -->
+            {% if current_user.is_authenticated and current_user.role == 'customer' %}
+            <form action="{{ url_for('cart.add_to_cart', product_id=product.id) }}" method="POST" class="mb-4">
+                <div class="input-group mb-3" style="max-width: 200px;">
+                    <input type="number" name="quantity" class="form-control" value="1" min="1" max="{{ product.stock }}">
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-shopping-cart"></i> Add to Cart
+                    </button>
+                </div>
+            </form>
+            {% elif not current_user.is_authenticated %}
+            <a href="{{ url_for('auth.login') }}" class="btn btn-success btn-lg">
+                Login to Purchase
+            </a>
+            {% endif %}
+            
+            <!-- Back to Products -->
+            <a href="{{ url_for('products.list_products') }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Products
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Quantity controls
+    const quantityInput = document.getElementById('quantity');
+    const decreaseBtn = document.getElementById('decrease');
+    const increaseBtn = document.getElementById('increase');
+    
+    decreaseBtn.addEventListener('click', () => {
+        let value = parseInt(quantityInput.value);
+        if (value > 1) {
+            quantityInput.value = value - 1;
+        }
+    });
+    
+    increaseBtn.addEventListener('click', () => {
+        let value = parseInt(quantityInput.value);
+        if (value < parseInt(quantityInput.max)) {
+            quantityInput.value = value + 1;
+        }
+    });
+    
+    // Add to cart functionality
+    const addToCartBtn = document.querySelector('.add-to-cart');
+    if (addToCartBtn) {
+        addToCartBtn.addEventListener('click', function() {
+            const productId = this.dataset.productId;
+            const quantity = parseInt(quantityInput.value);
+            
+            fetch(`/products/add/${productId}?quantity=${quantity}`)
+                .then(response => response.json())
+                .then(data => {
+                    // Update cart badge
+                    const badge = document.querySelector('.cart-badge');
+                    if (badge) {
+                        badge.textContent = parseInt(badge.textContent) + quantity;
+                    }
+                    // Show success message
+                    alert('Product added to cart!');
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Failed to add product to cart');
+                });
+        });
+    }
+});
+</script>
+{% endblock %} 

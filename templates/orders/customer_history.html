@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <h2>My Orders</h2>
+    {% if orders %}
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Date</th>
+                        <th>Total</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in orders %}
+                    <tr>
+                        <td>#{{ order.id }}</td>
+                        <td>{{ order.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td>${{ "%.2f"|format(order.total_amount) }}</td>
+                        <td>
+                            <span class="badge bg-{{ {
+                                'pending': 'warning',
+                                'processing': 'info',
+                                'shipped': 'primary',
+                                'delivered': 'success',
+                                'return_requested': 'danger'
+                            }[order.status] }}">
+                                {{ order.status|title }}
+                            </span>
+                        </td>
+                        <td>
+                            <a href="{{ url_for('order.view_order', order_id=order.id) }}" 
+                               class="btn btn-sm btn-info">
+                                <i class="fas fa-eye"></i> View Details
+                            </a>
+                            <a href="{{ url_for('order.download_invoice', order_id=order.id) }}" 
+                               class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-download"></i> Invoice
+                            </a>
+                            {% if order.status == 'shipped' %}
+                            <form action="{{ url_for('order.mark_order_delivered', order_id=order.id) }}" 
+                                  method="POST" class="d-inline">
+                                <button type="submit" class="btn btn-sm btn-success">
+                                    <i class="fas fa-check"></i> Mark as Delivered
+                                </button>
+                            </form>
+                            {% endif %}
+                            {% if order.status == 'delivered' %}
+                            <a href="{{ url_for('order.request_return', order_id=order.id, item_id=order.items[0].id) }}" 
+                               class="btn btn-sm btn-outline-danger">
+                                <i class="fas fa-undo"></i> Return
+                            </a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="5">
+                            <div class="ms-4">
+                                <strong>Items:</strong>
+                                <ul class="list-unstyled">
+                                    {% for item in order.items %}
+                                    <li>
+                                        {{ item.quantity }}x {{ item.product.name }} 
+                                        (${{ "%.2f"|format(item.price) }} each)
+                                        {% if order.status == 'delivered' %}
+                                        <a href="{{ url_for('order.request_return', order_id=order.id, item_id=item.id) }}" 
+                                           class="btn btn-sm btn-outline-danger ms-2">
+                                            <i class="fas fa-undo"></i> Return Item
+                                        </a>
+                                        {% endif %}
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            You haven't placed any orders yet.
+        </div>
+    {% endif %}
+</div>
+{% endblock %} 

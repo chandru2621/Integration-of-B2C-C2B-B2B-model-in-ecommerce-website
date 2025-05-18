@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block title %}Bulk Sustainable Products{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Bulk Sustainable Products</h2>
+    
+    <div class="alert alert-info">
+        <h4 class="alert-heading">About Our Bulk Products</h4>
+        <p>We specialize in providing both new and used sustainable products for organizations. Our used products are carefully inspected, refurbished, and certified to meet quality standards while promoting sustainability through reuse.</p>
+    </div>
+
+    <!-- Used Products Section -->
+    <h3 class="mt-4">Used Sustainable Products</h3>
+    <div class="row">
+        {% for product in products if product.condition == 'used' %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">{{ product.name }}</h5>
+                    <p class="card-text">{{ product.description }}</p>
+                    <ul class="list-unstyled">
+                        <li><strong>Price:</strong> ${{ "%.2f"|format(product.price) }}</li>
+                        <li><strong>Stock:</strong> {{ product.stock }} units</li>
+                        <li><strong>Sustainability Score:</strong> {{ product.sustainability_score }}/5</li>
+                        <li><strong>Materials:</strong> {{ product.materials }}</li>
+                        <li><strong>Certifications:</strong> {{ product.certifications }}</li>
+                        <li><strong>Bulk Discount:</strong> {{ product.bulk_discount }}</li>
+                    </ul>
+                    <a href="{{ url_for('products.place_bulk_order', product_id=product.id) }}" class="btn btn-primary">Place Bulk Order</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- New Products Section -->
+    <h3 class="mt-4">New Sustainable Products</h3>
+    <div class="row">
+        {% for product in products if product.condition == 'new' %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">{{ product.name }}</h5>
+                    <p class="card-text">{{ product.description }}</p>
+                    <ul class="list-unstyled">
+                        <li><strong>Price:</strong> ${{ "%.2f"|format(product.price) }}</li>
+                        <li><strong>Stock:</strong> {{ product.stock }} units</li>
+                        <li><strong>Sustainability Score:</strong> {{ product.sustainability_score }}/5</li>
+                        <li><strong>Materials:</strong> {{ product.materials }}</li>
+                        <li><strong>Certifications:</strong> {{ product.certifications }}</li>
+                        <li><strong>Bulk Discount:</strong> {{ product.bulk_discount }}</li>
+                    </ul>
+                    <a href="{{ url_for('products.place_bulk_order', product_id=product.id) }}" class="btn btn-primary">Place Bulk Order</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Custom Bulk Request Form -->
+    <div class="card mt-4">
+        <div class="card-body">
+            <h3>Custom Bulk Request</h3>
+            <p>Can't find what you're looking for? Submit a custom request and we'll help you find the right products.</p>
+            
+            <form action="{{ url_for('products.submit_bulk_request') }}" method="POST">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="organization" class="form-label">Organization Name</label>
+                        <input type="text" class="form-control" id="organization" name="organization" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" name="email" required>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="phone" class="form-label">Phone Number</label>
+                        <input type="tel" class="form-control" id="phone" name="phone" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="category" class="form-label">Product Category</label>
+                        <select class="form-select" id="category" name="category" required>
+                            <option value="">Select a category</option>
+                            {% for category in categories %}
+                            <option value="{{ category }}">{{ category }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="quantity" class="form-label">Estimated Quantity</label>
+                        <input type="number" class="form-control" id="quantity" name="quantity" min="1" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="condition" class="form-label">Product Condition</label>
+                        <select class="form-select" id="condition" name="condition" required>
+                            <option value="new">New</option>
+                            <option value="used">Used</option>
+                            <option value="both">Both</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="requirements" class="form-label">Special Requirements</label>
+                    <textarea class="form-control" id="requirements" name="requirements" rows="3"></textarea>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">Submit Request</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %} 

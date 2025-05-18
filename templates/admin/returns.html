@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Returns{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Manage Returns</h3>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Return ID</th>
+                                    <th>Order ID</th>
+                                    <th>Customer</th>
+                                    <th>Product</th>
+                                    <th>Return Reason</th>
+                                    <th>Status</th>
+                                    <th>Refund Amount</th>
+                                    <th>Requested Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for return in returns %}
+                                <tr>
+                                    <td>{{ return.id }}</td>
+                                    <td>{{ return.order_id }}</td>
+                                    <td>
+                                        <strong>{{ return.order.user.username }}</strong><br>
+                                        <small class="text-muted">{{ return.order.user.email }}</small>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            {% if return.order_item.product.image %}
+                                            <img src="{{ return.order_item.product.image }}" alt="{{ return.order_item.product.name }}" 
+                                                 class="img-thumbnail mr-2" style="width: 50px; height: 50px; object-fit: cover;">
+                                            {% endif %}
+                                            <div>
+                                                <strong>{{ return.order_item.product.name }}</strong><br>
+                                                <small class="text-muted">Qty: {{ return.quantity }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>{{ return.reason }}</td>
+                                    <td>
+                                        <span class="badge badge-{{ 
+                                            'warning' if return.status == 'pending'
+                                            else 'info' if return.status == 'processing'
+                                            else 'success' if return.status == 'approved'
+                                            else 'danger' if return.status == 'rejected'
+                                            else 'secondary' 
+                                        }}">
+                                            {{ return.status|title }}
+                                        </span>
+                                    </td>
+                                    <td>${{ "%.2f"|format(return.refund_amount) }}</td>
+                                    <td>{{ return.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <button type="button" class="btn btn-sm btn-info" data-toggle="collapse" 
+                                                    data-target="#returnDetails{{ return.id }}" aria-expanded="false" 
+                                                    aria-controls="returnDetails{{ return.id }}">
+                                                <i class="fas fa-info-circle"></i> Details
+                                            </button>
+                                            {% if return.status == 'pending' %}
+                                            <button type="button" class="btn btn-sm btn-success" data-toggle="modal" 
+                                                    data-target="#approveReturnModal{{ return.id }}">
+                                                <i class="fas fa-check"></i> Approve
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-danger" data-toggle="modal" 
+                                                    data-target="#rejectReturnModal{{ return.id }}">
+                                                <i class="fas fa-times"></i> Reject
+                                            </button>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="9" class="p-0">
+                                        <div id="returnDetails{{ return.id }}" class="collapse">
+                                            <div class="p-3">
+                                                <div class="row">
+                                                    <div class="col-md-6">
+                                                        <h5>Return Details</h5>
+                                                        <p>
+                                                            <strong>Original Order Date:</strong> {{ return.order.created_at.strftime('%Y-%m-%d %H:%M:%S') }}<br>
+                                                            <strong>Original Price:</strong> ${{ "%.2f"|format(return.order_item.price) }}<br>
+                                                            <strong>Return Quantity:</strong> {{ return.quantity }}<br>
+                                                            <strong>Condition:</strong> {{ return.condition|title }}<br>
+                                                            <strong>Notes:</strong> {{ return.notes or 'No additional notes' }}
+                                                        </p>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <h5>Customer Information</h5>
+                                                        <p>
+                                                            <strong>Name:</strong> {{ return.order.shipping_name }}<br>
+                                                            <strong>Address:</strong> {{ return.order.shipping_address }}<br>
+                                                            <strong>City:</strong> {{ return.order.shipping_city }}<br>
+                                                            <strong>State:</strong> {{ return.order.shipping_state }}<br>
+                                                            <strong>ZIP:</strong> {{ return.order.shipping_zip }}<br>
+                                                            <strong>Country:</strong> {{ return.order.shipping_country }}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <!-- Approve Return Modal -->
+                                <div class="modal fade" id="approveReturnModal{{ return.id }}" tabindex="-1" role="dialog" 
+                                     aria-labelledby="approveReturnModalLabel{{ return.id }}" aria-hidden="true">
+                                    <div class="modal-dialog" role="document">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="approveReturnModalLabel{{ return.id }}">Approve Return</h5>
+                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                    <span aria-hidden="true">&times;</span>
+                                                </button>
+                                            </div>
+                                            <form action="{{ url_for('admin.approve_return', return_id=return.id) }}" method="POST">
+                                                <div class="modal-body">
+                                                    <p>Are you sure you want to approve this return request?</p>
+                                                    <p>Refund amount: ${{ "%.2f"|format(return.refund_amount) }}</p>
+                                                    <div class="form-group">
+                                                        <label for="adminNotes{{ return.id }}">Admin Notes (optional)</label>
+                                                        <textarea class="form-control" id="adminNotes{{ return.id }}" name="admin_notes" rows="3"></textarea>
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                                    <button type="submit" class="btn btn-success">Approve Return</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Reject Return Modal -->
+                                <div class="modal fade" id="rejectReturnModal{{ return.id }}" tabindex="-1" role="dialog" 
+                                     aria-labelledby="rejectReturnModalLabel{{ return.id }}" aria-hidden="true">
+                                    <div class="modal-dialog" role="document">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="rejectReturnModalLabel{{ return.id }}">Reject Return</h5>
+                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                    <span aria-hidden="true">&times;</span>
+                                                </button>
+                                            </div>
+                                            <form action="{{ url_for('admin.reject_return', return_id=return.id) }}" method="POST">
+                                                <div class="modal-body">
+                                                    <p>Are you sure you want to reject this return request?</p>
+                                                    <div class="form-group">
+                                                        <label for="rejectionReason{{ return.id }}">Rejection Reason</label>
+                                                        <textarea class="form-control" id="rejectionReason{{ return.id }}" name="rejection_reason" rows="3" required></textarea>
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                                    <button type="submit" class="btn btn-danger">Reject Return</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

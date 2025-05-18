@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h3 class="mb-0">🌱 Bulk Sustainable Product Request</h3>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <h5>Welcome to our circular economy hub!</h5>
+                        <p class="mb-0">We specialize in recycling and repurposing used sustainable products. All products are sourced from verified returns and sustainably manufactured items.</p>
+                    </div>
+
+                    <form method="POST" action="{{ url_for('main.submit_bulk_request') }}">
+                        {{ form.csrf_token }}
+                        
+                        <div class="mb-3">
+                            {{ form.organization_name.label(class="form-label") }}
+                            {{ form.organization_name(class="form-control") }}
+                            {% if form.organization_name.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.organization_name.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.organization_address.label(class="form-label") }}
+                            {{ form.organization_address(class="form-control", placeholder="Enter your organization's complete address") }}
+                            {% if form.organization_address.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.organization_address.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.contact_email.label(class="form-label") }}
+                            {{ form.contact_email(class="form-control") }}
+                            {% if form.contact_email.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.contact_email.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.contact_phone.label(class="form-label") }}
+                            {{ form.contact_phone(class="form-control") }}
+                            {% if form.contact_phone.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.contact_phone.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.product_category.label(class="form-label") }}
+                            {{ form.product_category(class="form-select") }}
+                            {% if form.product_category.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.product_category.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.quantity.label(class="form-label") }}
+                            {{ form.quantity(class="form-control") }}
+                            {% if form.quantity.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.quantity.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.requirements.label(class="form-label") }}
+                            {{ form.requirements(class="form-control", rows=4) }}
+                            {% if form.requirements.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.requirements.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-paper-plane me-2"></i>Submit Bulk Request
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

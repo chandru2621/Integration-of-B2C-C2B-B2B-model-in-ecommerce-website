@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block title %}Order Details{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Order #{{ order.id }}</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h5>Order Information</h5>
+                            <p>
+                                <strong>Date:</strong> {{ order.created_at.strftime('%Y-%m-%d %H:%M:%S') }}<br>
+                                <strong>Status:</strong> 
+                                <span class="badge badge-{{ 
+                                    'primary' if order.status == 'pending'
+                                    else 'warning' if order.status == 'processing'
+                                    else 'info' if order.status == 'shipped'
+                                    else 'success' if order.status == 'delivered'
+                                    else 'danger' 
+                                }}">
+                                    {{ order.status|title }}
+                                </span><br>
+                                <strong>Total Amount:</strong> ${{ "%.2f"|format(order.total_amount) }}<br>
+                                <strong>Payment Method:</strong> {{ order.payment_method|title }}<br>
+                                <strong>Payment Status:</strong> 
+                                <span class="badge badge-{{ 'success' if order.payment_status == 'completed' else 'warning' }}">
+                                    {{ order.payment_status|title }}
+                                </span>
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>Shipping Information</h5>
+                            <p>
+                                <strong>Name:</strong> {{ order.shipping_name }}<br>
+                                <strong>Address:</strong> {{ order.shipping_address }}<br>
+                                <strong>City:</strong> {{ order.shipping_city }}<br>
+                                <strong>State:</strong> {{ order.shipping_state }}<br>
+                                <strong>ZIP:</strong> {{ order.shipping_zip }}<br>
+                                <strong>Country:</strong> {{ order.shipping_country }}
+                            </p>
+                            {% if order.tracking_number %}
+                            <p>
+                                <strong>Tracking Number:</strong> {{ order.tracking_number }}
+                            </p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <h5>Order Items</h5>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Price</th>
+                                    <th>Quantity</th>
+                                    <th>Total</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in order.items %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            {% if item.product.image %}
+                                            <img src="{{ item.product.image }}" alt="{{ item.product.name }}" 
+                                                 class="img-thumbnail mr-2" style="width: 50px; height: 50px; object-fit: cover;">
+                                            {% endif %}
+                                            <div>
+                                                <strong>{{ item.product.name }}</strong><br>
+                                                <small class="text-muted">SKU: {{ item.product.sku }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>${{ "%.2f"|format(item.price) }}</td>
+                                    <td>{{ item.quantity }}</td>
+                                    <td>${{ "%.2f"|format(item.total) }}</td>
+                                    <td>
+                                        {% if order.status == 'delivered' %}
+                                        <a href="{{ url_for('order.request_return', order_id=order.id, item_id=item.id) }}" 
+                                           class="btn btn-sm btn-warning">
+                                            <i class="fas fa-undo"></i> Return Item
+                                        </a>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {% if order.status == 'delivered' %}
+                    <div class="alert alert-info mt-3">
+                        <h5>Return Policy</h5>
+                        <p>You can return items from this order at any time after delivery.</p>
+                        <ul>
+                            <li>♻️ We accept fully used products</li>
+                            <li>💰 50% refund of original price</li>
+                            <li>❗ Only items purchased from our website</li>
+                        </ul>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

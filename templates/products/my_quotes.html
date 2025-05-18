@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <h2>My Quote Requests</h2>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Product</th>
+                <th>Requested Quantity</th>
+                <th>Requested Price</th>
+                <th>Status</th>
+                <th>Seller Response</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for quote in quotes %}
+            <tr>
+                <td>{{ quote.product.name }}</td>
+                <td>{{ quote.requested_quantity }}</td>
+                <td>${{ quote.requested_price }}</td>
+                <td>{{ quote.status }}</td>
+                <td>{{ quote.seller_response or '-' }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5">No quote requests found.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %} 

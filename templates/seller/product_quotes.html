@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Quotes for {{ product.name }}</h2>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Buyer</th>
+                <th>Requested Quantity</th>
+                <th>Requested Price</th>
+                <th>Status</th>
+                <th>Seller Response</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for quote in quotes %}
+            <tr>
+                <td>{{ quote.buyer.username }}</td>
+                <td>{{ quote.requested_quantity }}</td>
+                <td>${{ quote.requested_price }}</td>
+                <td>{{ quote.status }}</td>
+                <td>{{ quote.seller_response or '-' }}</td>
+                <td>
+                    {% if quote.status == 'pending' %}
+                    <form method="POST" action="{{ url_for('seller.respond_quote', quote_id=quote.id) }}">
+                        <select name="status" class="form-select form-select-sm mb-1">
+                            <option value="accepted">Accept</option>
+                            <option value="rejected">Reject</option>
+                        </select>
+                        <input type="text" name="seller_response" class="form-control form-control-sm mb-1" placeholder="Message (optional)">
+                        <button type="submit" class="btn btn-primary btn-sm">Respond</button>
+                    </form>
+                    {% else %}
+                    <span class="text-muted">Responded</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="6">No quotes found.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <a href="{{ url_for('seller.inventory') }}" class="btn btn-secondary">Back to Inventory</a>
+</div>
+{% endblock %} 

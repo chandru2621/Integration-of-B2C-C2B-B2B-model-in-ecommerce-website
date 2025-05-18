@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Submit Proposal for: {{ req.title }}</h2>
+    <form method="POST">
+        <div class="mb-3">
+            <label for="price" class="form-label">Proposed Price</label>
+            <input type="number" step="0.01" class="form-control" id="price" name="price" required>
+        </div>
+        <div class="mb-3">
+            <label for="details" class="form-label">Details</label>
+            <textarea class="form-control" id="details" name="details" rows="4" required></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Submit Proposal</button>
+        <a href="{{ url_for('main.requirement_detail', req_id=req.id) }}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %} 

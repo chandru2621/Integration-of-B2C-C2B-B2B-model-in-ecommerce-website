@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Bulk Order Request</h2>
+    <h4>{{ product.name }}</h4>
+    <p>Bulk Discount: {{ product.bulk_discount }}</p>
+    
+    <form method="POST">
+        <div class="form-group">
+            <label for="quantity">Quantity</label>
+            <input type="number" class="form-control" id="quantity" name="quantity" required min="1">
+        </div>
+        
+        <div class="form-group">
+            <label for="organization_name">Organization Name</label>
+            <input type="text" class="form-control" id="organization_name" name="organization_name" required>
+        </div>
+        
+        <button type="submit" class="btn btn-primary">Submit Bulk Order Request</button>
+    </form>
+</div>
+{% endblock %}

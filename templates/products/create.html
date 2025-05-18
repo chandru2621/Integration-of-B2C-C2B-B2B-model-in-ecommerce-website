@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="mb-0">Create New Product</h2>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('products.create_product') }}">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Product Name</label>
+                            <input type="text" class="form-control" id="name" name="name" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="price" class="form-label">Price ($)</label>
+                                <input type="number" class="form-control" id="price" name="price" step="0.01" min="0" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="stock" class="form-label">Stock</label>
+                                <input type="number" class="form-control" id="stock" name="stock" min="0" required>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="category" class="form-label">Category</label>
+                                <select class="form-select" id="category" name="category" required>
+                                    <option value="">Select a category</option>
+                                    {% for category in Product.CATEGORIES %}
+                                    <option value="{{ category }}">{{ category }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="subcategory" class="form-label">Subcategory (Optional)</label>
+                                <input type="text" class="form-control" id="subcategory" name="subcategory">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="brand" class="form-label">Brand</label>
+                            <input type="text" class="form-control" id="brand" name="brand">
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="sustainability_score" class="form-label">Sustainability Score (1-5)</label>
+                                <input type="number" class="form-control" id="sustainability_score" name="sustainability_score" min="1" max="5" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="image_url" class="form-label">Image URL (Optional)</label>
+                                <input type="url" class="form-control" id="image_url" name="image_url">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="materials" class="form-label">Materials (Optional)</label>
+                            <input type="text" class="form-control" id="materials" name="materials" placeholder="e.g., Organic cotton, Recycled plastic">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="certifications" class="form-label">Certifications (Optional)</label>
+                            <input type="text" class="form-control" id="certifications" name="certifications" placeholder="e.g., Fair Trade, Organic">
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="min_quantity" class="form-label">Minimum Quantity</label>
+                                <input type="number" class="form-control" id="min_quantity" name="min_quantity" min="1" value="1">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="bulk_price" class="form-label">Bulk Price per Unit (Optional)</label>
+                                <input type="number" class="form-control" id="bulk_price" name="bulk_price" step="0.01" min="0">
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Create Product
+                            </button>
+                            <a href="{{ url_for('products.list_products') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

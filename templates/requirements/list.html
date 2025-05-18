@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Open Requirements</h2>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Category</th>
+                <th>Quantity</th>
+                <th>Budget</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for req in requirements %}
+            <tr>
+                <td>{{ req.title }}</td>
+                <td>{{ req.category }}</td>
+                <td>{{ req.quantity or '-' }}</td>
+                <td>{% if req.budget %}${{ req.budget }}{% else %}-{% endif %}</td>
+                <td><a href="{{ url_for('main.requirement_detail', req_id=req.id) }}" class="btn btn-info btn-sm">View</a></td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5">No open requirements found.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %} 

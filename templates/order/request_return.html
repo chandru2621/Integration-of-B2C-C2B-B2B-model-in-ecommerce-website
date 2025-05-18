@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}Request Return{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Request Return</h2>
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">Item Details</h5>
+            <p>
+                <strong>Product:</strong> {{ order_item.product.name }}<br>
+                <strong>Quantity:</strong> {{ order_item.quantity }}<br>
+                <strong>Price:</strong> ${{ "%.2f"|format(order_item.price) }}<br>
+                <strong>Total:</strong> ${{ "%.2f"|format(order_item.total) }}
+            </p>
+
+            <form method="POST">
+                <div class="mb-3">
+                    <label for="quantity" class="form-label">Return Quantity</label>
+                    <input type="number" class="form-control" id="quantity" name="quantity" 
+                           min="1" max="{{ order_item.quantity }}" value="1" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="reason" class="form-label">Reason for Return</label>
+                    <select class="form-select" id="reason" name="reason" required>
+                        <option value="">Select a reason</option>
+                        <option value="wrong_item">Wrong Item Received</option>
+                        <option value="damaged">Item Damaged</option>
+                        <option value="not_as_described">Not as Described</option>
+                        <option value="quality_issues">Quality Issues</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label for="condition" class="form-label">Item Condition</label>
+                    <select class="form-select" id="condition" name="condition" required>
+                        <option value="">Select condition</option>
+                        <option value="new">New/Unused</option>
+                        <option value="like_new">Like New</option>
+                        <option value="good">Good</option>
+                        <option value="fair">Fair</option>
+                        <option value="poor">Poor</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label for="notes" class="form-label">Additional Notes</label>
+                    <textarea class="form-control" id="notes" name="notes" rows="3"></textarea>
+                </div>
+
+                <div class="alert alert-info">
+                    <strong>Refund Information:</strong><br>
+                    You will receive 50% of the original price as a refund once your return is approved.
+                    Estimated refund amount: ${{ "%.2f"|format(order_item.price * 0.5) }}
+                </div>
+
+                <button type="submit" class="btn btn-primary">Submit Return Request</button>
+                <a href="{{ url_for('order.view_order', order_id=order.id) }}" class="btn btn-secondary">Cancel</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %} 
